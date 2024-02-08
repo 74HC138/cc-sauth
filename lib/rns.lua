@@ -5,9 +5,9 @@ local aes = require("aes")
 
 local rns = {}
 
-function rns.deamon()
+function rns.daemon()
     local sockets = {}
-    print("started RNS deamon")
+    print("started RNS daemon")
 
     while true do
         local senderID, message = rednet.receive("RNS")
@@ -41,7 +41,7 @@ function rns.send(receiverID, msg, timeout)
     while true do
         senderID, msgCryptB = rednet.receive("RNS", timeout)
         if senderID == nil then
-            return nil
+            return false
         end
         if senderID == tonumber(receiverID) then
             break
@@ -49,6 +49,7 @@ function rns.send(receiverID, msg, timeout)
     end
     local msgCryptC = cipher:decrypt(msgCryptB)
     rednet.send(tonumber(receiverID), msgCryptC, "RNS")
+    return true
 end
 
 function rns.receive(timeout)
