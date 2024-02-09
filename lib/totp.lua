@@ -1,69 +1,62 @@
-local sha1 = require("sha1")
-local basexx = require("basexx")
+--[[
+MIT License
+
+Copyright (c) 2021 Cody Tilkins
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+]]
+
+-- please point this to proper location
+local otp = require("otp")
 
 local totp = {}
 
-local function truncateHash(hash)
-    local offset = tonumber(hash:sub(-1), 16) + 1
-    local subset = hash:sub(offset * 2 + 1, offset * 2 + 8)
-    local intValue = tonumber(subset, 16)
-    local truncated = intValue % (10 ^ 6)
-    return string.format("%06d", truncated)
+totp.at = function(instance, for_time, counter_offset)
+	return otp.generate_otp(instance, totp.timecode(instance, tonumber(for_time)) + (counter_offset or 0))
 end
 
-local function rshift(x, n)
-    return math.floor(x / 2^n)
+totp.now = function(instance, override)
+	return otp.generate_otp(instance, totp.timecode(instance, override or os.time()))
 end
 
-function totp.calc(secret, tx, t0)
-    tx = tx or 30
-    t0 = t0 or 0
-    local t = os.epoch("utc") / 1000
-    local ct = math.floor((t - t0) / tx)
-    
-    -- Convert ct to big-endian format
-    local ct_str = string.char(
-        bit.band(rshift(ct, 56), 0xFF),
-        bit.band(rshift(ct, 48), 0xFF),
-        bit.band(rshift(ct, 40), 0xFF),
-        bit.band(rshift(ct, 32), 0xFF),
-        bit.band(rshift(ct, 24), 0xFF),
-        bit.band(rshift(ct, 16), 0xFF),
-        bit.band(rshift(ct, 8), 0xFF),
-        bit.band(ct, 0xFF)
-    )
-
-    print("ct: " .. ct)
-    
-    local hmacHash = sha1.hmac(secret, ct_str)
-
-    print("hmacHash: " .. hmacHash)
-
-    local otp = truncateHash(hmacHash)
-
-    print("otp: " .. otp)
-
-    return otp
+totp.valid_until = function(instance, for_time, valid_window)
+	valid_window = valid_window or 0
+	return for_time + ((self.interval + 1) * valid_window)
 end
 
-
-function totp.generateUri(name, key, issuer)
-    local key_base32 = basexx.to_base32(key)
-    local uri = "otpauth://totp/"
-    uri = uri .. name .. "?secret=" .. key_base32
-    if (issuer) then
-        uri = uri .. "&issuer=" .. issuer
-    end
-    return uri
+totp.verify = function(instance, key, for_time, valid_window)
+	valid_window = valid_window or 0
+	for_time = for_time or os.time()
+	
+	if (valid_window > 0) then
+		for i=-valid_window, valid_window, 1 do
+			if (tostring(key) == tostring(totp.at(instance, for_time, i))) then
+				return true
+			end
+		end
+		return false
+	end
+	return tostring(key) == tostring(totp.at(instance, for_time))
 end
 
-function totp.generateSecret(length)
-    local key = ""
-    for _ = 1, length do
-        local index = math.random(0, 255)
-        key = key .. string.char(index)
-    end
-    return key
+totp.timecode = function(instance, for_time)
+	return math.floor(for_time/instance.interval)
 end
 
 return totp
