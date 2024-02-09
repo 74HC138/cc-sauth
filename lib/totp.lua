@@ -1,5 +1,5 @@
 local sha1 = require("sha1")
-local basee = require("basexx")
+local basexx = require("basexx")
 
 local totp = {}
 

@@ -1,8 +1,6 @@
-shell.run("cd lib")
-local totp = require("totp")
-local qrenc = require("qrencode")
-local qrdisp = require("qrdisplay")
-shell.run("cd ..")
+local totp = require("lib.totp")
+local qrenc = require("lib.qrencode")
+local qrdisp = require("lib.qrdisplay")
 
 local mon = peripheral.wrap("top")
 mon.setTextScale(0.5)
