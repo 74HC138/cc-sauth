@@ -16,10 +16,18 @@ function totp.calc(secret, tx, t0)
     t0 = t0 or 0
     local t = os.epoch("utc") / 1000
     local ct = math.floor((t - t0) / tx)
-    local ct_str = ""
-    for i = 8, 1, -1 do
-        ct_str = ct_str .. string.char(bit.band(bit.brshift(ct, 8 * (i - 1)), 0xFF))
-    end
+    
+    -- Convert ct to big-endian format
+    local ct_str = string.char(
+        bit.band(bit.rshift(ct, 56), 0xFF),
+        bit.band(bit.rshift(ct, 48), 0xFF),
+        bit.band(bit.rshift(ct, 40), 0xFF),
+        bit.band(bit.rshift(ct, 32), 0xFF),
+        bit.band(bit.rshift(ct, 24), 0xFF),
+        bit.band(bit.rshift(ct, 16), 0xFF),
+        bit.band(bit.rshift(ct, 8), 0xFF),
+        bit.band(ct, 0xFF)
+    )
 
     print("ct: " .. ct)
     
