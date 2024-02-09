@@ -11,6 +11,10 @@ local function truncateHash(hash)
     return string.format("%06d", truncated)
 end
 
+local function rshift(x, n)
+    return math.floor(x / 2^n)
+end
+
 function totp.calc(secret, tx, t0)
     tx = tx or 30
     t0 = t0 or 0
@@ -19,13 +23,13 @@ function totp.calc(secret, tx, t0)
     
     -- Convert ct to big-endian format
     local ct_str = string.char(
-        bit.band(bit.rshift(ct, 56), 0xFF),
-        bit.band(bit.rshift(ct, 48), 0xFF),
-        bit.band(bit.rshift(ct, 40), 0xFF),
-        bit.band(bit.rshift(ct, 32), 0xFF),
-        bit.band(bit.rshift(ct, 24), 0xFF),
-        bit.band(bit.rshift(ct, 16), 0xFF),
-        bit.band(bit.rshift(ct, 8), 0xFF),
+        bit.band(rshift(ct, 56), 0xFF),
+        bit.band(rshift(ct, 48), 0xFF),
+        bit.band(rshift(ct, 40), 0xFF),
+        bit.band(rshift(ct, 32), 0xFF),
+        bit.band(rshift(ct, 24), 0xFF),
+        bit.band(rshift(ct, 16), 0xFF),
+        bit.band(rshift(ct, 8), 0xFF),
         bit.band(ct, 0xFF)
     )
 
@@ -41,6 +45,7 @@ function totp.calc(secret, tx, t0)
 
     return otp
 end
+
 
 function totp.generateUri(name, key, issuer)
     local key_base32 = basexx.to_base32(key)
