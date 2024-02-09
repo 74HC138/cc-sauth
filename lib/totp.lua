@@ -16,12 +16,14 @@ function totp.calc(secret, tx, t0)
     t0 = t0 or 0
     local t = os.epoch("utc") / 1000
     local ct = math.floor((t - t0) / tx)
-    local ct_hex = string.format("%x", ct)
+    local ct_str = ""
+    for i = 8, 1, -1 do
+        ct_str = ct_str .. string.char(bit.band(bit.brshift(ct, 8 * (i - 1)), 0xFF))
+    end
 
     print("ct: " .. ct)
-    print("ct_hex: " .. ct_hex)
     
-    local hmacHash = sha1.hmac(secret, ct_hex)
+    local hmacHash = sha1.hmac(secret, ct_str)
 
     print("hmacHash: " .. hmacHash)
 
