@@ -41,15 +41,13 @@ function totp.generateUri(name, key, issuer)
 end
 
 function totp.generateSecret(length)
-    local function generate_secret_key(length)
-        local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
-        local key = ""
-        for _ = 1, length do
-            local index = math.random(1, #chars)
-            key = key .. chars:sub(index, index)
-        end
-        return key
+    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
+    local key = ""
+    for _ = 1, length do
+        local index = math.random(1, #chars)
+        key = key .. chars:sub(index, index)
     end
+    return key
 end
 
 return totp
