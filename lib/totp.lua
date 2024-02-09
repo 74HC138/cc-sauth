@@ -38,6 +38,7 @@ function totp.generateUri(name, key, issuer)
     uri = uri .. name .. "?secret=" .. key_base32
     if (issuer) then
         uri = uri .. "&issuer=" .. issuer
+    end
     return uri
 end
 
