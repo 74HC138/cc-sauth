@@ -1,4 +1,5 @@
 local sha1 = require("sha1")
+local basee = require("basexx")
 
 local totp = {}
 
@@ -32,20 +33,19 @@ function totp.calc(secret, tx, t0)
 end
 
 function totp.generateUri(name, key, issuer)
+    local key_base32 = basexx.to_base32(key)
     local uri = "otpauth://totp/"
-    if issuer then
-        uri = uri .. issuer .. ":"
-    end
-    uri = uri .. name .. "?secret=" .. key .. "&issuer=" .. (issuer or "")
+    uri = uri .. name .. "?secret=" .. key_base32
+    if (issuer) then
+        uri = uri .. "&issuer=" .. issuer
     return uri
 end
 
 function totp.generateSecret(length)
-    local chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789"
     local key = ""
     for _ = 1, length do
-        local index = math.random(1, #chars)
-        key = key .. chars:sub(index, index)
+        local index = math.random(0, 255)
+        key = key .. string.char(index)
     end
     return key
 end

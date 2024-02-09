@@ -21,16 +21,18 @@ function qrdisp.display(data, t)
                 t.setBackgroundColor(colors.black)
             else
                 if (data[y+1][x] > 0) then
-                    t.setBackgroundColor(color.black)
+                    t.setBackgroundColor(colors.black)
                 else
                     t.setBackgroundColor(colors.white)
                 end
             end
-            t.write("▀")
+            t.write(string.char(131))
         end
         local x, y =  t.getCursorPos()
         t.setCursorPos(1, y + 1)
     end
     term.setTextColor(colors.white)
-    term.setBackgroundColor(color.black)
+    term.setBackgroundColor(colors.black)
 end
+
+return qrdisp
