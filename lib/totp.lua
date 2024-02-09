@@ -5,7 +5,7 @@ local totp = {}
 
 local function truncateHash(hash)
     local offset = tonumber(hash:sub(-1), 16) + 1
-    local subset = hash:sub(offset * 2 - 1, offset * 2 + 7)
+    local subset = hash:sub(offset * 2 + 1, offset * 2 + 8)
     local intValue = tonumber(subset, 16)
     local truncated = intValue % (10 ^ 6)
     return string.format("%06d", truncated)
