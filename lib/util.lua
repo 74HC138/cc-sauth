@@ -59,7 +59,7 @@ end
 
 util.build_uri = function(secret, name, initial_count, issuer_name, algorithm, digits, period)
 	local label = util.encode_url(name)
-	label = issuer_name and (util.encode_url(issuer_name) .. ':' .. label) or ""
+	label = label or ""
 	
 	algorithm = algorithm and string.upper(algorithm) or ""
 	

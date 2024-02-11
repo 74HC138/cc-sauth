@@ -2,7 +2,7 @@
 
 local sha = require("sha")
 local rns = require("rns")
-local base64 = require("base64")
+local basexx = require("basexx")
 local base64Table = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/"
 
 local config = {}
@@ -15,8 +15,9 @@ local sauth = {}
 local function writeConfig()
 
 end
-local function log()
-
+local function log(msg, level)
+    level = level or 0
+    os.queueEvent("log", level, msg)
 end
 
 local function command_bind(request, senderId)
@@ -76,8 +77,8 @@ end
 local function command_login(request, senderId, type)
     if (request["AuthToken"] and request["name"] and request["pwd"]) then
         if (config["binds"][request["AuthToken"]]) then
-            local nameHash = base64.decode(request["name"])
-            local pwdHash = base64.decode(request["pwd"])
+            local nameHash = basexx.from_base64(request["name"])
+            local pwdHash = basexx.from_base64(request["pwd"])
             local loggedIn = false
             local loggedUser
             for _, user in pairs(config["accounts"]) do
@@ -90,7 +91,7 @@ local function command_login(request, senderId, type)
             if (loggedIn) then
                 loggedUser["last_logtime"] = os.time()
                 loggedUser["last_logdate"] = os.date()
-                log("Terminal \"" .. config["binds"][request["AuthToken"]]["id"] .. "\" logged in " .. (loggedUser["name"] or loggedUser["name_hash"]))
+                log("Terminal \"" .. config["binds"][request["AuthToken"]]["id"] .. "\" logged in " .. (loggedUser["name"] or loggedUser["name_hash"]), 1)
                 local otToken
                 while true do
                     otToken = ""
@@ -106,7 +107,7 @@ local function command_login(request, senderId, type)
                 tokens[otToken]["age"] = 0
                 rns.send(senderId, "sauth" .. textutils.serialise({type = "response", code = 200, rsp = "logged in", otToken = otToken}))
             else
-                log("Terminal \"" .. config["binds"][request["AuthToken"]]["id"] .. "\" tried to login as " .. nameHash)
+                log("Terminal \"" .. config["binds"][request["AuthToken"]]["id"] .. "\" tried to login as " .. nameHash, 1)
                 rns.send(senderId, "sauth" .. textutils.serialise({type = "response", code = 500, rsp = "login failed"}))
             end
         else
